@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TITLE_URL } from '../../assets';
 
 interface Endpoint {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -17,11 +18,14 @@ interface EndpointGroup {
 @Component({
   selector: 'app-about',
   templateUrl: './about.component.html',
+  // FIX: Corrected typo from Change-DetectionStrategy to ChangeDetectionStrategy
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule],
 })
 export class AboutComponent {
   
+  readonly titleUrl = TITLE_URL;
+
   readonly apiDocs: EndpointGroup[] = [
     {
       name: 'Authentication',

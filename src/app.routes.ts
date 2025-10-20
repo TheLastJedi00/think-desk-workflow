@@ -4,7 +4,7 @@ import { AboutComponent } from './pages/about/about.component';
 
 export const routes: Routes = [
   { path: 'workflow', component: WorkflowComponent },
-  { path: 'docs', component: AboutComponent },
-  { path: '', redirectTo: '/workflow', pathMatch: 'full' },
-  { path: '**', redirectTo: '/workflow' } // Fallback route
+  { path: 'home', component: AboutComponent },
+  { path: '', redirectTo: '/home', pathMatch: 'full' },
+  { path: '**', redirectTo: '/home' } // Fallback route
 ];

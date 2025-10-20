@@ -2,17 +2,16 @@
   <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex items-center justify-between h-20">
       <div class="flex items-center">
-        <a routerLink="/workflow" class="flex items-center space-x-3 rtl:space-x-reverse">
-          <img [src]="logoUrl" class="h-10" alt="ThinkDesk Logo" />
-          <img [src]="titleUrl" class="h-8 hidden sm:block" alt="ThinkDesk Title" />
+        <a routerLink="/home" class="flex items-center space-x-3 rtl:space-x-reverse">
+          <img [src]="logoUrl" class="h-9" alt="ThinkDesk API Workflow Logo" />
         </a>
       </div>
       <div class="flex items-center space-x-4 sm:space-x-6">
+        <a routerLink="/home" routerLinkActive="text-[#e20074]" class="text-gray-300 hover:text-[#e20074] transition-colors duration-200 font-medium text-sm sm:text-base">Home</a>
         <a routerLink="/workflow" routerLinkActive="text-[#e20074]" [routerLinkActiveOptions]="{exact: true}" class="text-gray-300 hover:text-[#e20074] transition-colors duration-200 font-medium text-sm sm:text-base">Workflow</a>
-        <a routerLink="/docs" routerLinkActive="text-[#e20074]" class="text-gray-300 hover:text-[#e20074] transition-colors duration-200 font-medium text-sm sm:text-base">About</a>
         <a href="http://localhost:8080/swagger-ui/index.html" target="_blank" rel="noopener noreferrer" class="text-gray-300 hover:text-white transition-colors duration-200 flex items-center space-x-2">
           <svg class="w-6 h-6" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2-2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
           </svg>
           <span class="hidden lg:block">Swagger</span>
         </a>
