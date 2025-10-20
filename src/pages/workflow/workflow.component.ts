@@ -63,6 +63,7 @@ export class WorkflowComponent {
   isLoading = signal(false);
   error = signal<string | null>(null);
   lastResponse = signal<ApiResponse | null>(null);
+  showPortWarning = signal(true);
 
   // API data state
   authToken = signal<string | null>(null);
@@ -486,6 +487,10 @@ export class WorkflowComponent {
     }
   }
 
+  dismissPortWarning() {
+    this.showPortWarning.set(false);
+  }
+
   startOver() {
     this.currentStep.set('login');
     this.authToken.set(null);
@@ -517,6 +522,7 @@ export class WorkflowComponent {
     this.ticketTechnicianSearch.set('');
     this.ticketCategorySearch.set('');
     this.ticketPrioritySearch.set('');
+    this.showPortWarning.set(true);
   }
 
   selectTenant(tenant: Tenant) {

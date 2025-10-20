@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router';
 import { WorkflowComponent } from './pages/workflow/workflow.component';
-import { DocsComponent } from './pages/docs/docs.component';
+import { AboutComponent } from './pages/about/about.component';
 
 export const routes: Routes = [
   { path: 'workflow', component: WorkflowComponent },
-  { path: 'docs', component: DocsComponent },
+  { path: 'docs', component: AboutComponent },
   { path: '', redirectTo: '/workflow', pathMatch: 'full' },
   { path: '**', redirectTo: '/workflow' } // Fallback route
 ];
