@@ -1,0 +1,16 @@
+<div class="min-h-screen bg-black text-gray-200 flex justify-center p-4 font-sans">
+  <div class="w-full max-w-6xl">
+    <header class="text-center mb-12 animate-fade-in pt-8">
+      <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tight">{{ apiSpec().title }}</h1>
+      <p class="mt-4 text-lg md:text-xl text-gray-400 max-w-3xl mx-auto">{{ apiSpec().description }}</p>
+    </header>
+
+    <div class="space-y-12">
+      @for (group of apiSpec().groups; track group.name) {
+        <div class="bg-gray-900/50 border border-gray-800 rounded-2xl shadow-2xl shadow-[#e20074]/10 p-8 transition-all duration-500">
+            <app-endpoint-group [group]="group"></app-endpoint-group>
+        </div>
+      }
+    </div>
+  </div>
+</div>

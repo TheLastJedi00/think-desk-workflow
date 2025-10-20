@@ -1,0 +1,9 @@
+
+<section>
+  <h2 class="text-3xl font-semibold text-white border-b border-gray-700 pb-3 mb-6">{{ group().name }}</h2>
+  <div class="space-y-4">
+    @for (endpoint of group().endpoints; track endpoint.method + endpoint.path) {
+      <app-endpoint [endpoint]="endpoint"></app-endpoint>
+    }
+  </div>
+</section>

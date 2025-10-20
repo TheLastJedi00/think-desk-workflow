@@ -1,0 +1,177 @@
+<main class="min-h-screen bg-black text-gray-200 flex items-center justify-center p-4 font-sans">
+  <div class="w-full max-w-3xl bg-gray-900/50 border border-gray-800 rounded-2xl shadow-2xl shadow-[#e20074]/10 p-8 transition-all duration-500">
+    
+    @switch (currentStep()) {
+      @case ('login') {
+        <div class="animate-fade-in">
+          <p class="text-sm font-semibold text-[#e20074]">STEP 1 / 6</p>
+          <h1 class="text-3xl font-bold text-white mt-2">Authentication</h1>
+          <p class="text-gray-400 mt-2 mb-6">First, let's authenticate. This will give us a token to authorize all future requests.</p>
+          <div class="space-y-4">
+            <div>
+              <label for="loginEmail" class="text-sm text-gray-400 block mb-2">Login Email</label>
+              <input id="loginEmail" type="email" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#e20074]" [ngModel]="loginEmail()" (ngModelChange)="loginEmail.set($event)">
+            </div>
+            <div>
+              <label for="loginPassword" class="text-sm text-gray-400 block mb-2">Password</label>
+              <input id="loginPassword" type="password" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#e20074]" [ngModel]="loginPassword()" (ngModelChange)="loginPassword.set($event)">
+            </div>
+          </div>
+          <button (click)="handleLogin()" [disabled]="isLoading()" class="w-full mt-6 flex justify-center items-center bg-[#e20074] hover:bg-pink-600 disabled:bg-pink-800 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
+            @if (isLoading()) { <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Authenticating...</span> }
+            @else { <span>Get Token &amp; Continue</span> }
+          </button>
+        </div>
+      }
+      @case ('tenant') {
+        <div class="animate-fade-in">
+          <p class="text-sm font-semibold text-[#e20074]">STEP 2 / 6</p>
+          <h1 class="text-3xl font-bold text-white mt-2">Create Tenant</h1>
+          <p class="text-gray-400 mt-2 mb-6">Now, let's create a Tenant, which represents an isolated organization.</p>
+          <div class="space-y-4">
+            <div><label for="tenantTradingName" class="text-sm text-gray-400 block mb-2">Trading Name</label><input id="tenantTradingName" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="tenantTradingName()" (ngModelChange)="tenantTradingName.set($event)"></div>
+            <div><label for="tenantLegalName" class="text-sm text-gray-400 block mb-2">Legal Name</label><input id="tenantLegalName" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="tenantLegalName()" (ngModelChange)="tenantLegalName.set($event)"></div>
+            <div><label for="tenantTaxID" class="text-sm text-gray-400 block mb-2">Tax ID</label><input id="tenantTaxID" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="tenantTaxID()" (ngModelChange)="tenantTaxID.set($event)"></div>
+            <div><label for="tenantSettings" class="text-sm text-gray-400 block mb-2">Settings (JSON)</label><input id="tenantSettings" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="tenantSettings()" (ngModelChange)="tenantSettings.set($event)"></div>
+          </div>
+          <button (click)="handleCreateTenant()" [disabled]="isLoading()" class="w-full mt-6 flex justify-center items-center bg-[#e20074] hover:bg-pink-600 disabled:bg-pink-800 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
+            @if (isLoading()) { <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Creating Tenant...</span> }
+            @else { <span>Create Tenant &amp; Continue</span> }
+          </button>
+        </div>
+      }
+      @case ('role') {
+        <div class="animate-fade-in">
+          <p class="text-sm font-semibold text-[#e20074]">STEP 3 / 6</p>
+          <h1 class="text-3xl font-bold text-white mt-2">Create Role</h1>
+          <p class="text-gray-400 mt-2 mb-6">Roles define permissions and access levels for users and technicians.</p>
+           <div class="space-y-4">
+            <div><label for="roleName" class="text-sm text-gray-400 block mb-2">Role Name</label><input id="roleName" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="roleName()" (ngModelChange)="roleName.set($event)"></div>
+          </div>
+          <button (click)="handleCreateRole()" [disabled]="isLoading()" class="w-full mt-6 flex justify-center items-center bg-[#e20074] hover:bg-pink-600 disabled:bg-pink-800 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
+            @if (isLoading()) { <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Creating Role...</span> }
+            @else { <span>Create Role &amp; Continue</span> }
+          </button>
+        </div>
+      }
+      @case ('user') {
+        <div class="animate-fade-in">
+          <p class="text-sm font-semibold text-[#e20074]">STEP 4 / 6</p>
+          <h1 class="text-3xl font-bold text-white mt-2">Create User</h1>
+          <p class="text-gray-400 mt-2 mb-6">With a tenant established, create a User (requester) who will open the ticket. Tenant ID: {{createdIds().tenantId}}.</p>
+          <div class="space-y-4">
+            <div><label for="userName" class="text-sm text-gray-400 block mb-2">Name</label><input id="userName" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="userName()" (ngModelChange)="userName.set($event)"></div>
+            <div><label for="userEmail" class="text-sm text-gray-400 block mb-2">Email</label><input id="userEmail" type="email" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="userEmail()" (ngModelChange)="userEmail.set($event)"></div>
+            <div><label for="userPass" class="text-sm text-gray-400 block mb-2">Password</label><input id="userPass" type="password" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="userPassword()" (ngModelChange)="userPassword.set($event)"></div>
+            <div><label for="userPos" class="text-sm text-gray-400 block mb-2">Position</label><input id="userPos" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="userPosition()" (ngModelChange)="userPosition.set($event)"></div>
+          </div>
+          <button (click)="handleCreateUser()" [disabled]="isLoading()" class="w-full mt-6 flex justify-center items-center bg-[#e20074] hover:bg-pink-600 disabled:bg-pink-800 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
+            @if (isLoading()) { <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Creating User...</span> }
+            @else { <span>Create User &amp; Continue</span> }
+          </button>
+        </div>
+      }
+      @case ('sla') {
+        <div class="animate-fade-in">
+          <p class="text-sm font-semibold text-[#e20074]">STEP 5 / 6</p>
+          <h1 class="text-3xl font-bold text-white mt-2">Create SLA Policy</h1>
+          <p class="text-gray-400 mt-2 mb-6">Define a Service Level Agreement (SLA) policy for response and resolution times.</p>
+           <div class="space-y-6">
+              <div>
+                <h3 class="text-lg font-semibold text-white mb-3 border-b border-gray-700 pb-2">SLA Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div><label for="slaName" class="text-sm text-gray-400 block mb-2">Policy Name</label><input id="slaName" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="slaName()" (ngModelChange)="slaName.set($event)"></div>
+                  <div><label for="slaPrioName" class="text-sm text-gray-400 block mb-2">Priority Name</label><input id="slaPrioName" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="slaPriorityName()" (ngModelChange)="slaPriorityName.set($event)"></div>
+                  <div><label for="slaRespTime" class="text-sm text-gray-400 block mb-2">Response Time (mins)</label><input id="slaRespTime" type="number" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="slaResponseTime()" (ngModelChange)="slaResponseTime.set($event)"></div>
+                  <div><label for="slaResTime" class="text-sm text-gray-400 block mb-2">Resolution Time (mins)</label><input id="slaResTime" type="number" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="slaResolutionTime()" (ngModelChange)="slaResolutionTime.set($event)"></div>
+                   <div class="flex items-center space-x-4 pt-2">
+                    <div class="flex items-center"><input id="slaActive" type="checkbox" class="h-4 w-4 rounded bg-gray-700 text-[#e20074] focus:ring-[#e20074]" [ngModel]="slaIsActive()" (ngModelChange)="slaIsActive.set($event)"><label for="slaActive" class="ml-2 text-sm text-gray-300">Active</label></div>
+                    <div class="flex items-center"><input id="slaOpHours" type="checkbox" class="h-4 w-4 rounded bg-gray-700 text-[#e20074] focus:ring-[#e20074]" [ngModel]="slaOperationalHoursOnly()" (ngModelChange)="slaOperationalHoursOnly.set($event)"><label for="slaOpHours" class="ml-2 text-sm text-gray-300">Operational Hours Only</label></div>
+                  </div>
+                </div>
+              </div>
+               <div>
+                <h3 class="text-lg font-semibold text-white mb-3 border-b border-gray-700 pb-2">Category Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div><label for="slaCatName" class="text-sm text-gray-400 block mb-2">Category Name</label><input id="slaCatName" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="slaCategoryName()" (ngModelChange)="slaCategoryName.set($event)"></div>
+                  <div><label for="slaCatDesc" class="text-sm text-gray-400 block mb-2">Category Description</label><input id="slaCatDesc" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="slaCategoryDesc()" (ngModelChange)="slaCategoryDesc.set($event)"></div>
+                </div>
+              </div>
+           </div>
+          <button (click)="handleCreateSla()" [disabled]="isLoading()" class="w-full mt-6 flex justify-center items-center bg-[#e20074] hover:bg-pink-600 disabled:bg-pink-800 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
+            @if (isLoading()) { <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Creating SLA...</span> }
+            @else { <span>Create SLA &amp; Continue</span> }
+          </button>
+        </div>
+      }
+      @case ('ticket') {
+        <div class="animate-fade-in">
+          <p class="text-sm font-semibold text-[#e20074]">STEP 6 / 6</p>
+          <h1 class="text-3xl font-bold text-white mt-2">Create Ticket</h1>
+          <p class="text-gray-400 mt-2 mb-6">Finally, create a support ticket using the resources we've just set up.</p>
+           <div class="space-y-4">
+            <div><label for="ticketTitle" class="text-sm text-gray-400 block mb-2">Title</label><input id="ticketTitle" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="ticketTitle()" (ngModelChange)="ticketTitle.set($event)"></div>
+            <div><label for="ticketDesc" class="text-sm text-gray-400 block mb-2">Description</label><textarea id="ticketDesc" class="w-full h-24 bg-gray-900 border border-gray-700 rounded-md p-3 text-white focus:outline-none focus:ring-2 focus:ring-[#e20074]" [ngModel]="ticketDescription()" (ngModelChange)="ticketDescription.set($event)"></textarea></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="ticketType" class="text-sm text-gray-400 block mb-2">Ticket Type</label>
+                <select id="ticketType" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-[#e20074]" [ngModel]="ticketType()" (ngModelChange)="ticketType.set($event)">
+                  <option>INCIDENT</option>
+                  <option>REQUEST</option>
+                  <option>PROBLEM</option>
+                </select>
+              </div>
+              <div><label for="ticketDueDate" class="text-sm text-gray-400 block mb-2">Resolution Due Date</label><input id="ticketDueDate" type="datetime-local" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="ticketDueDate()" (ngModelChange)="ticketDueDate.set($event)"></div>
+            </div>
+             <div class="text-xs text-gray-500 pt-2 space-y-1">
+                <p>Tenant ID: {{ createdIds().tenantId }}</p>
+                <p>Requester (User) ID: {{ createdIds().userId }}</p>
+                <p>Category ID: {{ createdIds().categoryId }}</p>
+                <p>Priority ID: {{ createdIds().priorityId }}</p>
+             </div>
+          </div>
+          <button (click)="handleCreateTicket()" [disabled]="isLoading()" class="w-full mt-6 flex justify-center items-center bg-[#e20074] hover:bg-pink-600 disabled:bg-pink-800 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
+            @if (isLoading()) { <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Creating Ticket...</span> }
+            @else { <span>Finish Workflow</span> }
+          </button>
+        </div>
+      }
+       @case ('complete') {
+        <div class="animate-fade-in text-center">
+          <h1 class="text-3xl font-bold text-white mt-2">Workflow Complete!</h1>
+          <p class="text-gray-400 mt-2 mb-6">You have successfully configured the basic entities in the ThinkDesk API.</p>
+          
+          <div class="bg-gray-900 border border-gray-700 rounded-lg p-4 text-left font-mono text-sm text-gray-300 space-y-2">
+            <p><span class="text-[#e20074] font-semibold">authToken:</span> "{{ authToken()?.substring(0, 30) }}..."</p>
+            <p><span class="text-[#e20074] font-semibold">tenantId:</span> {{ createdIds().tenantId }}</p>
+            <p><span class="text-[#e20074] font-semibold">roleId:</span> {{ createdIds().roleId }}</p>
+            <p><span class="text-[#e20074] font-semibold">userId:</span> {{ createdIds().userId }}</p>
+            <p><span class="text-[#e20074] font-semibold">slaPolicyId:</span> {{ createdIds().slaPolicyId }}</p>
+            <p><span class="text-[#e20074] font-semibold">ticketId:</span> {{ createdIds().ticketId }}</p>
+          </div>
+
+          <p class="text-gray-500 mt-6 text-sm">You can now use these IDs and the auth token to interact with the API further.</p>
+
+          <button (click)="startOver()" class="mt-6 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-md transition-colors duration-200">
+            Start Over
+          </button>
+        </div>
+      }
+    }
+
+    <!-- Shared Error and Response Display -->
+    @if (error()) {
+      <div class="mt-6 bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded-md animate-fade-in">
+        <strong class="font-bold">Error:</strong>
+        <span class="block sm:inline ml-2">{{ error() }}</span>
+      </div>
+    }
+
+    @if (lastResponse(); as res) {
+      <div class="mt-6 animate-fade-in">
+        <h3 class="text-lg font-semibold text-white mb-2">Last Successful Response (Status: <span [class.text-green-400]="res.status >= 200 && res.status < 300" [class.text-yellow-400]="res.status >= 400">{{res.status}}</span>)</h3>
+        <pre class="w-full max-h-48 bg-gray-900 border border-gray-700 rounded-md p-3 text-white font-mono text-xs overflow-auto"><code>{{ formatResponseBody(res.body) }}</code></pre>
+      </div>
+    }
+  </div>
+</main>
