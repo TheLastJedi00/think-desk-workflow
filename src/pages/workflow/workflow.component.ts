@@ -110,7 +110,7 @@ export class WorkflowComponent {
   slaIsActive = signal(true);
   slaCategoryName = signal('Infraestrutura');
   slaCategoryDesc = signal('Problemas de infraestrutura');
-  slaPriorityName = signal('Média');
+  slaPriorityName = signal('Alta');
 
   ticketTitle = signal('Impressora não funciona');
   ticketDescription = signal('A impressora do 2º andar parou de funcionar.');
@@ -297,25 +297,25 @@ export class WorkflowComponent {
     try {
       const body = JSON.stringify({
         name: this.slaName(),
-        responseTimeMinutes: this.slaResponseTime(),
-        resolutionTimeMinutes: this.slaResolutionTime(),
+        responseTimeInMinutes: this.slaResponseTime(),
+        incidentResolutionTimeInMinutes: this.slaResolutionTime(),
         operationalHoursOnly: this.slaOperationalHoursOnly(),
-        isActive: this.slaIsActive(),
-        categoryDto: {
+        active: this.slaIsActive(),
+        category: {
           name: this.slaCategoryName(),
           description: this.slaCategoryDesc()
         },
-        tenantId: this.slaSelectedTenantId(),
-        priorityDto: {
+        tenantid: this.slaSelectedTenantId(),
+        priority: {
           name: this.slaPriorityName()
         }
       });
-      const response = await this.executePostRequest<{ id: number, categoryDto: {id: number}, priorityDto: {id: number} }>('/slapolicies', body, true);
+      const response = await this.executePostRequest<{ id: number, category: {id: number}, priority: {id: number} }>('/slapolicies', body, true);
       this.createdIds.update(ids => ({
         ...ids,
         slaPolicyId: response.id,
-        categoryId: response.categoryDto.id,
-        priorityId: response.priorityDto.id,
+        categoryId: response.category.id,
+        priorityId: response.priority.id,
       }));
       this.currentStep.set('ticket');
     } catch (e) {

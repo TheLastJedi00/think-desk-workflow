@@ -79,7 +79,7 @@ export class ApiSpecService {
       {
         name: 'SLA Policies',
         endpoints: [
-            { method: 'POST', path: '/slapolicies', description: 'Cria uma nova política de SLA.', needsAuth: true, pathParams: [], requestBodyExample: JSON.stringify({"name":"SLA Padrão - TI","responseTimeMinutes":120,"resolutionTimeMinutes":480,"operationalHoursOnly":true,"isActive":true,"categoryDto":{"name":"Infraestrutura","description":"Problemas de infraestrutura"},"tenantId":1,"priorityDto":{"name":"Média"}}, null, 2) },
+            { method: 'POST', path: '/slapolicies', description: 'Cria uma nova política de SLA.', needsAuth: true, pathParams: [], requestBodyExample: JSON.stringify({"name":"SLA Padrão - TI","responseTimeInMinutes":120,"incidentResolutionTimeInMinutes":480,"operationalHoursOnly":true,"tenantid":1,"category":{"name":"Infraestrutura","description":"Problemas de infraestrutura"},"priority":{"name":"Alta"},"active":true}, null, 2) },
             { method: 'GET', path: '/slapolicies', description: 'Lista todas as políticas de SLA.', needsAuth: true, pathParams: [] },
             { method: 'GET', path: '/slapolicies/{id}', description: 'Busca uma política por ID.', needsAuth: true, pathParams: [{name: 'id', description: 'ID da política'}] },
             { method: 'PUT', path: '/slapolicies/{id}', description: 'Atualiza uma política.', needsAuth: true, pathParams: [{name: 'id', description: 'ID da política'}], requestBodyExample: JSON.stringify({"name":"SLA Urgente - TI","responseTimeMinutes":60,"resolutionTimeMinutes":240}, null, 2) },
