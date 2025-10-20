@@ -210,21 +210,120 @@
               <div><label for="ticketDueDate" class="text-sm text-gray-400 block mb-2">Resolution Due Date</label><input id="ticketDueDate" type="datetime-local" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="ticketDueDate()" (ngModelChange)="ticketDueDate.set($event)"></div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <!-- Tenant -->
               <div>
-                <label for="ticketTenant" class="text-sm text-gray-400 block mb-2">Tenant ID</label>
-                <input id="ticketTenant" type="number" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="ticketTenantId()" (ngModelChange)="ticketTenantId.set($event)">
+                <label class="text-sm text-gray-400 block mb-2">Tenant</label>
+                @if (selectedTicketTenant()) {
+                  <div class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white flex justify-between items-center">
+                    <span>{{ selectedTicketTenant()?.tradingName }}</span>
+                    <button (click)="ticketTenantId.set(null); ticketTenantSearch.set('')" class="text-xs text-[#e20074] hover:text-pink-400 font-semibold">Change</button>
+                  </div>
+                } @else {
+                  <div class="relative">
+                    <input type="text" placeholder="Search for a tenant..."
+                      class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#e20074]"
+                      [ngModel]="ticketTenantSearch()"
+                      (ngModelChange)="ticketTenantSearch.set($event)"
+                      (focus)="showTicketTenantResults.set(true)"
+                      (blur)="onTicketTenantBlur()">
+                    @if (showTicketTenantResults() && filteredTicketTenants().length > 0) {
+                      <div class="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                        @for (tenant of filteredTicketTenants(); track tenant.id) {
+                          <div (mousedown)="selectTicketTenant(tenant)" class="px-3 py-2 hover:bg-[#e20074]/20 cursor-pointer">
+                            {{ tenant.tradingName }}
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
               </div>
+
+              <!-- Requester -->
               <div>
-                <label for="ticketRequester" class="text-sm text-gray-400 block mb-2">Requester (User) ID</label>
-                <input id="ticketRequester" type="number" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="ticketRequesterId()" (ngModelChange)="ticketRequesterId.set($event)">
+                <label class="text-sm text-gray-400 block mb-2">Requester</label>
+                @if (selectedTicketRequester()) {
+                  <div class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white flex justify-between items-center">
+                    <span>{{ selectedTicketRequester()?.name }}</span>
+                    <button (click)="ticketRequesterId.set(null); ticketRequesterSearch.set('')" class="text-xs text-[#e20074] hover:text-pink-400 font-semibold">Change</button>
+                  </div>
+                } @else {
+                  <div class="relative">
+                    <input type="text" placeholder="Search for a user..."
+                      class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#e20074]"
+                      [ngModel]="ticketRequesterSearch()"
+                      (ngModelChange)="ticketRequesterSearch.set($event)"
+                      (focus)="showTicketRequesterResults.set(true)"
+                      (blur)="onTicketRequesterBlur()">
+                    @if (showTicketRequesterResults() && filteredTicketRequesters().length > 0) {
+                      <div class="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                        @for (user of filteredTicketRequesters(); track user.id) {
+                          <div (mousedown)="selectTicketRequester(user)" class="px-3 py-2 hover:bg-[#e20074]/20 cursor-pointer">
+                            {{ user.name }}
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
               </div>
+
+              <!-- Category -->
               <div>
-                <label for="ticketCategory" class="text-sm text-gray-400 block mb-2">Category ID</label>
-                <input id="ticketCategory" type="number" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="ticketCategoryId()" (ngModelChange)="ticketCategoryId.set($event)">
+                <label class="text-sm text-gray-400 block mb-2">Category</label>
+                @if (selectedTicketCategory()) {
+                  <div class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white flex justify-between items-center">
+                    <span>{{ selectedTicketCategory()?.name }}</span>
+                    <button (click)="ticketCategoryId.set(null); ticketCategorySearch.set('')" class="text-xs text-[#e20074] hover:text-pink-400 font-semibold">Change</button>
+                  </div>
+                } @else {
+                  <div class="relative">
+                    <input type="text" placeholder="Search for a category..."
+                      class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#e20074]"
+                      [ngModel]="ticketCategorySearch()"
+                      (ngModelChange)="ticketCategorySearch.set($event)"
+                      (focus)="showTicketCategoryResults.set(true)"
+                      (blur)="onTicketCategoryBlur()">
+                    @if (showTicketCategoryResults() && filteredTicketCategories().length > 0) {
+                      <div class="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                        @for (category of filteredTicketCategories(); track category.id) {
+                          <div (mousedown)="selectTicketCategory(category)" class="px-3 py-2 hover:bg-[#e20074]/20 cursor-pointer">
+                            {{ category.name }}
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
               </div>
+
+              <!-- Priority -->
               <div>
-                <label for="ticketPriority" class="text-sm text-gray-400 block mb-2">Priority ID</label>
-                <input id="ticketPriority" type="number" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="ticketPriorityId()" (ngModelChange)="ticketPriorityId.set($event)">
+                <label class="text-sm text-gray-400 block mb-2">Priority</label>
+                @if (selectedTicketPriority()) {
+                  <div class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white flex justify-between items-center">
+                    <span>{{ selectedTicketPriority()?.name }}</span>
+                    <button (click)="ticketPriorityId.set(null); ticketPrioritySearch.set('')" class="text-xs text-[#e20074] hover:text-pink-400 font-semibold">Change</button>
+                  </div>
+                } @else {
+                  <div class="relative">
+                    <input type="text" placeholder="Search for a priority..."
+                      class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#e20074]"
+                      [ngModel]="ticketPrioritySearch()"
+                      (ngModelChange)="ticketPrioritySearch.set($event)"
+                      (focus)="showTicketPriorityResults.set(true)"
+                      (blur)="onTicketPriorityBlur()">
+                    @if (showTicketPriorityResults() && filteredTicketPriorities().length > 0) {
+                      <div class="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                        @for (priority of filteredTicketPriorities(); track priority.id) {
+                          <div (mousedown)="selectTicketPriority(priority)" class="px-3 py-2 hover:bg-[#e20074]/20 cursor-pointer">
+                            {{ priority.name }}
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
               </div>
             </div>
           </div>

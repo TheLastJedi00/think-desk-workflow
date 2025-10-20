@@ -21,6 +21,29 @@ interface Role {
   name: string;
 }
 
+interface User {
+  id: number;
+  name: string;
+}
+
+interface Category {
+  id: number;
+  name: string;
+}
+
+interface Priority {
+  id: number;
+  name: string;
+}
+
+// Assuming the GET /slapolicies response has this structure for each item
+interface SlaPolicy {
+  id: number;
+  category: Category;
+  priority: Priority;
+}
+
+
 @Component({
   selector: 'app-workflow',
   templateUrl: './workflow.component.html',
@@ -117,11 +140,58 @@ export class WorkflowComponent {
   ticketType = signal<'INCIDENT' | 'REQUEST' | 'PROBLEM'>('INCIDENT');
   ticketDueDate = signal(new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().substring(0, 16));
 
+  // API data state for ticket step
+  users = signal<User[]>([]);
+  categories = signal<Category[]>([]);
+  priorities = signal<Priority[]>([]);
+
   // Ticket foreign key signals
   ticketTenantId = signal<number | null>(null);
   ticketRequesterId = signal<number | null>(null);
   ticketCategoryId = signal<number | null>(null);
   ticketPriorityId = signal<number | null>(null);
+  
+  // Ticket autocomplete search text
+  ticketTenantSearch = signal('');
+  ticketRequesterSearch = signal('');
+  ticketCategorySearch = signal('');
+  ticketPrioritySearch = signal('');
+
+  // Ticket autocomplete visibility
+  showTicketTenantResults = signal(false);
+  showTicketRequesterResults = signal(false);
+  showTicketCategoryResults = signal(false);
+  showTicketPriorityResults = signal(false);
+  
+  // Computed properties for ticket autocompletes
+  filteredTicketTenants = computed(() => {
+    const search = this.ticketTenantSearch().toLowerCase();
+    if (!search) return this.tenants();
+    return this.tenants().filter(t => t.tradingName.toLowerCase().includes(search));
+  });
+
+  filteredTicketRequesters = computed(() => {
+    const search = this.ticketRequesterSearch().toLowerCase();
+    if (!search) return this.users();
+    return this.users().filter(u => u.name.toLowerCase().includes(search));
+  });
+
+  filteredTicketCategories = computed(() => {
+    const search = this.ticketCategorySearch().toLowerCase();
+    if (!search) return this.categories();
+    return this.categories().filter(c => c.name.toLowerCase().includes(search));
+  });
+
+  filteredTicketPriorities = computed(() => {
+    const search = this.ticketPrioritySearch().toLowerCase();
+    if (!search) return this.priorities();
+    return this.priorities().filter(p => p.name.toLowerCase().includes(search));
+  });
+
+  selectedTicketTenant = computed(() => this.tenants().find(t => t.id === this.ticketTenantId()));
+  selectedTicketRequester = computed(() => this.users().find(u => u.id === this.ticketRequesterId()));
+  selectedTicketCategory = computed(() => this.categories().find(c => c.id === this.ticketCategoryId()));
+  selectedTicketPriority = computed(() => this.priorities().find(p => p.id === this.ticketPriorityId()));
 
 
   private async executePostRequest<T>(path: string, body: string, needsAuth: boolean): Promise<T> {
@@ -322,17 +392,52 @@ export class WorkflowComponent {
         slaPolicyId: response.id,
         categoryId: response.category.id,
         priorityId: response.priority.id,
+        tenantId: this.slaSelectedTenantId(),
       }));
       
-      // Pre-populate ticket form fields
-      this.ticketTenantId.set(this.slaSelectedTenantId());
-      this.ticketRequesterId.set(this.createdIds().userId);
-      this.ticketCategoryId.set(response.category.id);
-      this.ticketPriorityId.set(response.priority.id);
-
-      this.currentStep.set('ticket');
+      await this.fetchDataForTicketStep();
     } catch (e) {
       console.error('Create SLA failed', e);
+    }
+  }
+
+  async fetchDataForTicketStep() {
+    this.isLoading.set(true);
+    try {
+      const tenants = await this.executeGetRequest<Tenant[]>('/tenants');
+      this.tenants.set(tenants);
+
+      const users = await this.executeGetRequest<User[]>('/users');
+      this.users.set(users);
+
+      const slaPolicies = await this.executeGetRequest<SlaPolicy[]>('/slapolicies');
+
+      // De-duplicate categories and priorities
+      const categoryMap = new Map<number, Category>();
+      const priorityMap = new Map<number, Priority>();
+      for (const policy of slaPolicies) {
+        if (policy.category && !categoryMap.has(policy.category.id)) {
+          categoryMap.set(policy.category.id, policy.category);
+        }
+        if (policy.priority && !priorityMap.has(policy.priority.id)) {
+          priorityMap.set(policy.priority.id, policy.priority);
+        }
+      }
+      this.categories.set(Array.from(categoryMap.values()));
+      this.priorities.set(Array.from(priorityMap.values()));
+
+      // Pre-populate ticket form fields from previous steps
+      this.ticketTenantId.set(this.createdIds().tenantId);
+      this.ticketRequesterId.set(this.createdIds().userId);
+      this.ticketCategoryId.set(this.createdIds().categoryId);
+      this.ticketPriorityId.set(this.createdIds().priorityId);
+
+      this.currentStep.set('ticket');
+
+    } catch (e) {
+      console.error('Failed to fetch data for ticket step', e);
+    } finally {
+      this.isLoading.set(false);
     }
   }
 
@@ -370,10 +475,20 @@ export class WorkflowComponent {
     this.selectedRoleId.set(null);
     this.slaTenantSearch.set('');
     this.slaSelectedTenantId.set(null);
+
+    this.users.set([]);
+    this.categories.set([]);
+    this.priorities.set([]);
+    
     this.ticketTenantId.set(null);
     this.ticketRequesterId.set(null);
     this.ticketCategoryId.set(null);
     this.ticketPriorityId.set(null);
+    
+    this.ticketTenantSearch.set('');
+    this.ticketRequesterSearch.set('');
+    this.ticketCategorySearch.set('');
+    this.ticketPrioritySearch.set('');
   }
 
   selectTenant(tenant: Tenant) {
@@ -405,6 +520,44 @@ export class WorkflowComponent {
   onSlaTenantBlur() {
     setTimeout(() => this.showSlaTenantResults.set(false), 150);
   }
+  
+  // Ticket Autocomplete Handlers
+  selectTicketTenant(tenant: Tenant) {
+    this.ticketTenantId.set(tenant.id);
+    this.ticketTenantSearch.set('');
+    this.showTicketTenantResults.set(false);
+  }
+  onTicketTenantBlur() {
+    setTimeout(() => this.showTicketTenantResults.set(false), 150);
+  }
+
+  selectTicketRequester(user: User) {
+    this.ticketRequesterId.set(user.id);
+    this.ticketRequesterSearch.set('');
+    this.showTicketRequesterResults.set(false);
+  }
+  onTicketRequesterBlur() {
+    setTimeout(() => this.showTicketRequesterResults.set(false), 150);
+  }
+
+  selectTicketCategory(category: Category) {
+    this.ticketCategoryId.set(category.id);
+    this.ticketCategorySearch.set('');
+    this.showTicketCategoryResults.set(false);
+  }
+  onTicketCategoryBlur() {
+    setTimeout(() => this.showTicketCategoryResults.set(false), 150);
+  }
+
+  selectTicketPriority(priority: Priority) {
+    this.ticketPriorityId.set(priority.id);
+    this.ticketPrioritySearch.set('');
+    this.showTicketPriorityResults.set(false);
+  }
+  onTicketPriorityBlur() {
+    setTimeout(() => this.showTicketPriorityResults.set(false), 150);
+  }
+
 
   formatResponseBody(body: any): string {
     if (body === null || body === undefined) return '';
