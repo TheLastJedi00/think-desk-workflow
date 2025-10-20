@@ -146,7 +146,7 @@ export class WorkflowComponent {
         errorMessage = err.message;
       }
       this.error.set(errorMessage);
-      throw new Error(errorMessage);
+      throw err; // Propagate original error to allow for specific handling by the caller
     } finally {
       this.isLoading.set(false);
     }
@@ -200,7 +200,20 @@ export class WorkflowComponent {
       this.createdIds.update(ids => ({ ...ids, tenantId: response.id }));
       this.currentStep.set('role');
     } catch (e) {
-      console.error('Create Tenant failed', e);
+      if (
+        e instanceof HttpErrorResponse &&
+        e.status === 500 &&
+        e.error?.message === 'CNPJ já está sendo usado por outro Tenant'
+      ) {
+        // Recoverable error: Tenant already exists.
+        // Clear the error message and proceed. The user will select the tenant in the next steps.
+        this.error.set(null);
+        this.lastResponse.set({ status: e.status, body: e.error });
+        this.currentStep.set('role');
+      } else {
+        // For any other error, log it. The error is already set on the UI by executePostRequest.
+        console.error('Create Tenant failed', e);
+      }
     }
   }
 
