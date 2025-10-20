@@ -410,7 +410,12 @@ export class WorkflowComponent {
       const users = await this.executeGetRequest<User[]>('/users');
       this.users.set(users);
 
-      const slaPolicies = await this.executeGetRequest<SlaPolicy[]>('/slapolicies');
+      const slaPoliciesResponse = await this.executeGetRequest<SlaPolicy[] | { content: SlaPolicy[] }>('/slapolicies');
+      const slaPolicies = Array.isArray(slaPoliciesResponse) ? slaPoliciesResponse : slaPoliciesResponse?.content;
+
+      if (!Array.isArray(slaPolicies)) {
+        throw new TypeError('Could not extract an array of SLA policies from the API response.');
+      }
 
       // De-duplicate categories and priorities
       const categoryMap = new Map<number, Category>();
