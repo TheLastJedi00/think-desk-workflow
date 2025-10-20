@@ -297,16 +297,16 @@ export class WorkflowComponent {
     try {
       const body = JSON.stringify({
         name: this.slaName(),
-        responseTimeInMinutes: this.slaResponseTime(),
-        incidentResolutionTimeInMinutes: this.slaResolutionTime(),
+        responseTimeMinutes: this.slaResponseTime(),
+        resolutionTimeMinutes: this.slaResolutionTime(),
         operationalHoursOnly: this.slaOperationalHoursOnly(),
-        active: this.slaIsActive(),
-        category: {
+        isActive: this.slaIsActive(),
+        tenantId: this.slaSelectedTenantId(),
+        categoryDto: {
           name: this.slaCategoryName(),
           description: this.slaCategoryDesc()
         },
-        tenantid: this.slaSelectedTenantId(),
-        priority: {
+        priorityDto: {
           name: this.slaPriorityName()
         }
       });
