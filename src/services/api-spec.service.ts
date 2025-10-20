@@ -89,7 +89,7 @@ export class ApiSpecService {
       {
         name: 'Tickets',
         endpoints: [
-            { method: 'POST', path: '/tickets', description: 'Cria um novo ticket de suporte.', needsAuth: true, pathParams: [], requestBodyExample: JSON.stringify({"title":"Configuração de Novo Acesso VPN","description":"O usuário precisa de acesso VPN para trabalhar remotamente. Detalhes de permissões anexados.","resolutionDueDate":"2025-11-20T14:30:00","ticketType":"SERVICEREQUEST","category":1,"technician":1,"tenant":3,"requester":1,"priority":1}, null, 2) },
+            { method: 'POST', path: '/tickets', description: 'Cria um novo ticket de suporte.', needsAuth: true, pathParams: [], requestBodyExample: JSON.stringify({"title":"Impressora não funciona","description":"A impressora do 2º andar parou de funcionar.","resolutionDueDate":"2024-10-28T18:00:00","ticketType":"INCIDENT","category":1,"technician":1,"tenant":1,"requester":2,"priority":3}, null, 2) },
             { method: 'GET', path: '/tickets', description: 'Lista todos os tickets.', needsAuth: true, pathParams: [] },
             { method: 'GET', path: '/tickets/{id}', description: 'Busca um ticket por ID.', needsAuth: true, pathParams: [{name: 'id', description: 'ID do ticket'}] },
             { method: 'PUT', path: '/tickets/{id}', description: 'Atualiza um ticket.', needsAuth: true, pathParams: [{name: 'id', description: 'ID do ticket'}], requestBodyExample: JSON.stringify({"title":"Impressora não funciona - URGENTE","status":"IN_PROGRESS"}, null, 2) },

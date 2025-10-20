@@ -114,8 +114,14 @@ export class WorkflowComponent {
 
   ticketTitle = signal('Impressora não funciona');
   ticketDescription = signal('A impressora do 2º andar parou de funcionar.');
-  ticketType = signal<'INCIDENT' | 'SERVICEREQUEST' | 'PROBLEM'>('SERVICEREQUEST');
+  ticketType = signal<'INCIDENT' | 'REQUEST' | 'PROBLEM'>('INCIDENT');
   ticketDueDate = signal(new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().substring(0, 16));
+
+  // Ticket foreign key signals
+  ticketTenantId = signal<number | null>(null);
+  ticketRequesterId = signal<number | null>(null);
+  ticketCategoryId = signal<number | null>(null);
+  ticketPriorityId = signal<number | null>(null);
 
 
   private async executePostRequest<T>(path: string, body: string, needsAuth: boolean): Promise<T> {
@@ -317,6 +323,13 @@ export class WorkflowComponent {
         categoryId: response.category.id,
         priorityId: response.priority.id,
       }));
+      
+      // Pre-populate ticket form fields
+      this.ticketTenantId.set(this.slaSelectedTenantId());
+      this.ticketRequesterId.set(this.createdIds().userId);
+      this.ticketCategoryId.set(response.category.id);
+      this.ticketPriorityId.set(response.priority.id);
+
       this.currentStep.set('ticket');
     } catch (e) {
       console.error('Create SLA failed', e);
@@ -330,11 +343,10 @@ export class WorkflowComponent {
         description: this.ticketDescription(),
         resolutionDueDate: new Date(this.ticketDueDate()).toISOString(),
         ticketType: this.ticketType(),
-        category: this.createdIds().categoryId,
-        technician: 1, // Technician is not created in the workflow, so we use a default ID.
-        tenant: this.createdIds().tenantId,
-        requester: this.createdIds().userId,
-        priority: this.createdIds().priorityId
+        category: this.ticketCategoryId(),
+        tenant: this.ticketTenantId(),
+        requester: this.ticketRequesterId(),
+        priority: this.ticketPriorityId()
       });
       const response = await this.executePostRequest<{ id: number }>('/tickets', body, true);
       this.createdIds.update(ids => ({ ...ids, ticketId: response.id }));
@@ -358,6 +370,10 @@ export class WorkflowComponent {
     this.selectedRoleId.set(null);
     this.slaTenantSearch.set('');
     this.slaSelectedTenantId.set(null);
+    this.ticketTenantId.set(null);
+    this.ticketRequesterId.set(null);
+    this.ticketCategoryId.set(null);
+    this.ticketPriorityId.set(null);
   }
 
   selectTenant(tenant: Tenant) {
