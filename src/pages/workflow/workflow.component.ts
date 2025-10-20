@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, signal, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
@@ -9,6 +9,16 @@ type WorkflowStep = 'login' | 'tenant' | 'role' | 'user' | 'sla' | 'ticket' | 'c
 interface ApiResponse {
   status: number;
   body: any;
+}
+
+interface Tenant {
+  id: number;
+  tradingName: string;
+}
+
+interface Role {
+  id: number;
+  name: string;
 }
 
 @Component({
@@ -57,6 +67,32 @@ export class WorkflowComponent {
   userPassword = signal('password123');
   userPosition = signal('Analista de Marketing');
 
+  // User step selection signals
+  tenants = signal<Tenant[]>([]);
+  roles = signal<Role[]>([]);
+  tenantSearch = signal('');
+  roleSearch = signal('');
+  selectedTenantId = signal<number|null>(null);
+  selectedRoleId = signal<number|null>(null);
+  showTenantResults = signal(false);
+  showRoleResults = signal(false);
+
+  filteredTenants = computed(() => {
+    const search = this.tenantSearch().toLowerCase();
+    if (!search) return this.tenants();
+    return this.tenants().filter(t => t.tradingName.toLowerCase().includes(search));
+  });
+
+  filteredRoles = computed(() => {
+    const search = this.roleSearch().toLowerCase();
+    if (!search) return this.roles();
+    return this.roles().filter(r => r.name.toLowerCase().includes(search));
+  });
+
+  selectedTenant = computed(() => this.tenants().find(t => t.id === this.selectedTenantId()));
+  selectedRole = computed(() => this.roles().find(r => r.id === this.selectedRoleId()));
+
+
   slaName = signal('SLA Padrão - TI');
   slaResponseTime = signal(120);
   slaResolutionTime = signal(480);
@@ -72,7 +108,7 @@ export class WorkflowComponent {
   ticketDueDate = signal(new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().substring(0, 16));
 
 
-  private async executeRequest<T>(method: 'POST', path: string, body: string, needsAuth: boolean): Promise<T> {
+  private async executePostRequest<T>(path: string, body: string, needsAuth: boolean): Promise<T> {
     this.isLoading.set(true);
     this.error.set(null);
     this.lastResponse.set(null);
@@ -90,8 +126,7 @@ export class WorkflowComponent {
 
     try {
       const parsedBody = JSON.parse(body);
-      const response$ = this.http.request<T>(method, url, {
-        body: parsedBody,
+      const response$ = this.http.post<T>(url, parsedBody, {
         headers: headers,
         observe: 'response'
       });
@@ -117,10 +152,35 @@ export class WorkflowComponent {
     }
   }
 
+  private async executeGetRequest<T>(path: string): Promise<T> {
+    const baseUrl = 'http://localhost:8080';
+    const url = `${baseUrl}${path}`;
+    let headers = new HttpHeaders();
+
+    if (!this.authToken()) {
+      throw new Error('Authentication token is missing.');
+    }
+    headers = headers.set('Authorization', `Bearer ${this.authToken()}`);
+
+    try {
+      const response$ = this.http.get<T>(url, { headers });
+      return await firstValueFrom(response$);
+    } catch (err) {
+      let errorMessage = 'An unknown error occurred while fetching data.';
+      if (err instanceof HttpErrorResponse) {
+        errorMessage = `Error fetching data (${path}): ${err.status} ${err.statusText}.`;
+      } else if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+      this.error.set(errorMessage);
+      throw new Error(errorMessage);
+    }
+  }
+
   async handleLogin() {
     try {
       const body = JSON.stringify({ login: this.loginEmail(), password: this.loginPassword() });
-      const response = await this.executeRequest<{ token: string }>('POST', '/login', body, false);
+      const response = await this.executePostRequest<{ token: string }>('/login', body, false);
       this.authToken.set(response.token);
       this.currentStep.set('tenant');
     } catch (e) {
@@ -136,7 +196,7 @@ export class WorkflowComponent {
         taxID: this.tenantTaxID(),
         settings: this.tenantSettings()
       });
-      const response = await this.executeRequest<{ id: number }>('POST', '/tenants', body, true);
+      const response = await this.executePostRequest<{ id: number }>('/tenants', body, true);
       this.createdIds.update(ids => ({ ...ids, tenantId: response.id }));
       this.currentStep.set('role');
     } catch (e) {
@@ -147,24 +207,49 @@ export class WorkflowComponent {
   async handleCreateRole() {
     try {
       const body = JSON.stringify({ name: this.roleName() });
-      const response = await this.executeRequest<{ id: number }>('POST', '/roles', body, true);
+      const response = await this.executePostRequest<{ id: number }>('/roles', body, true);
       this.createdIds.update(ids => ({ ...ids, roleId: response.id }));
-      this.currentStep.set('user');
+      await this.fetchTenantsAndRoles();
     } catch (e) {
       console.error('Create Role failed', e);
     }
   }
 
+  async fetchTenantsAndRoles() {
+    this.isLoading.set(true);
+    try {
+      const tenants = await this.executeGetRequest<Tenant[]>('/tenants');
+      this.tenants.set(tenants);
+
+      const roles = await this.executeGetRequest<Role[]>('/roles');
+      this.roles.set(roles);
+
+      this.selectedTenantId.set(this.createdIds().tenantId);
+      this.selectedRoleId.set(this.createdIds().roleId);
+
+      this.currentStep.set('user');
+    } catch (e) {
+      console.error('Failed to fetch tenants or roles', e);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
   async handleCreateUser() {
+    if (!this.selectedTenantId() || !this.selectedRoleId()) {
+      this.error.set("Please select a tenant and a role.");
+      return;
+    }
     try {
       const body = JSON.stringify({
         name: this.userName(),
         email: this.userEmail(),
         password: this.userPassword(),
         position: this.userPosition(),
-        tenantId: this.createdIds().tenantId
+        tenantId: this.selectedTenantId(),
+        roles: [{ id: this.selectedRoleId() }]
       });
-      const response = await this.executeRequest<{ id: number }>('POST', '/users', body, true);
+      const response = await this.executePostRequest<{ id: number }>('/users', body, true);
       this.createdIds.update(ids => ({ ...ids, userId: response.id }));
       this.currentStep.set('sla');
     } catch (e) {
@@ -189,7 +274,7 @@ export class WorkflowComponent {
           name: this.slaPriorityName()
         }
       });
-      const response = await this.executeRequest<{ id: number, categoryDto: {id: number}, priorityDto: {id: number} }>('POST', '/slapolicies', body, true);
+      const response = await this.executePostRequest<{ id: number, categoryDto: {id: number}, priorityDto: {id: number} }>('/slapolicies', body, true);
       this.createdIds.update(ids => ({
         ...ids,
         slaPolicyId: response.id,
@@ -214,7 +299,7 @@ export class WorkflowComponent {
         requester: this.createdIds().userId,
         priority: this.createdIds().priorityId
       });
-      const response = await this.executeRequest<{ id: number }>('POST', '/tickets', body, true);
+      const response = await this.executePostRequest<{ id: number }>('/tickets', body, true);
       this.createdIds.update(ids => ({ ...ids, ticketId: response.id }));
       this.currentStep.set('complete');
     } catch (e) {
@@ -228,6 +313,32 @@ export class WorkflowComponent {
     this.createdIds.set({ tenantId: null, roleId: null, userId: null, categoryId: null, priorityId: null, slaPolicyId: null, ticketId: null });
     this.error.set(null);
     this.lastResponse.set(null);
+    this.tenants.set([]);
+    this.roles.set([]);
+    this.tenantSearch.set('');
+    this.roleSearch.set('');
+    this.selectedTenantId.set(null);
+    this.selectedRoleId.set(null);
+  }
+
+  selectTenant(tenant: Tenant) {
+    this.selectedTenantId.set(tenant.id);
+    this.tenantSearch.set('');
+    this.showTenantResults.set(false);
+  }
+
+  onTenantBlur() {
+    setTimeout(() => this.showTenantResults.set(false), 150);
+  }
+
+  selectRole(role: Role) {
+    this.selectedRoleId.set(role.id);
+    this.roleSearch.set('');
+    this.showRoleResults.set(false);
+  }
+
+  onRoleBlur() {
+    setTimeout(() => this.showRoleResults.set(false), 150);
   }
 
   formatResponseBody(body: any): string {

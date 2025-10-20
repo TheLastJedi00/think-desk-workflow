@@ -1,4 +1,5 @@
 
+
 import { Injectable } from '@angular/core';
 
 export interface ApiSpec {
@@ -60,7 +61,7 @@ export class ApiSpecService {
       {
           name: 'Users',
           endpoints: [
-              { method: 'POST', path: '/users', description: 'Cria um novo usuário (solicitante).', needsAuth: true, pathParams: [], requestBodyExample: JSON.stringify({"name":"Usuário Final","email":"usuario@exemplo.com","password":"password123","position":"Analista de Marketing","tenantId":1}, null, 2) },
+              { method: 'POST', path: '/users', description: 'Cria um novo usuário (solicitante).', needsAuth: true, pathParams: [], requestBodyExample: JSON.stringify({"name":"Usuário Final","email":"usuario@exemplo.com","password":"password123","position":"Analista de Marketing","tenantId":1,"roles":[{"id":1}]}, null, 2) },
               { method: 'GET', path: '/users', description: 'Lista todos os usuários.', needsAuth: true, pathParams: [] },
               { method: 'GET', path: '/users/{id}', description: 'Busca um usuário por ID.', needsAuth: true, pathParams: [{name: 'id', description: 'ID do usuário'}] },
               { method: 'PUT', path: '/users/{id}', description: 'Atualiza um usuário.', needsAuth: true, pathParams: [{name: 'id', description: 'ID do usuário'}], requestBodyExample: JSON.stringify({"name":"Usuário Final Atualizado","email":"usuario.novo@exemplo.com","position":"Analista de Marketing Sênior"}, null, 2) },

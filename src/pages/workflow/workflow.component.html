@@ -58,14 +58,72 @@
         <div class="animate-fade-in">
           <p class="text-sm font-semibold text-[#e20074]">STEP 4 / 6</p>
           <h1 class="text-3xl font-bold text-white mt-2">Create User</h1>
-          <p class="text-gray-400 mt-2 mb-6">With a tenant established, create a User (requester) who will open the ticket. Tenant ID: {{createdIds().tenantId}}.</p>
+          <p class="text-gray-400 mt-2 mb-6">With a tenant and role established, create a User (requester) who will open the ticket.</p>
           <div class="space-y-4">
             <div><label for="userName" class="text-sm text-gray-400 block mb-2">Name</label><input id="userName" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="userName()" (ngModelChange)="userName.set($event)"></div>
             <div><label for="userEmail" class="text-sm text-gray-400 block mb-2">Email</label><input id="userEmail" type="email" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="userEmail()" (ngModelChange)="userEmail.set($event)"></div>
             <div><label for="userPass" class="text-sm text-gray-400 block mb-2">Password</label><input id="userPass" type="password" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="userPassword()" (ngModelChange)="userPassword.set($event)"></div>
             <div><label for="userPos" class="text-sm text-gray-400 block mb-2">Position</label><input id="userPos" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="userPosition()" (ngModelChange)="userPosition.set($event)"></div>
+          
+            <!-- Tenant Selection -->
+            <div>
+              <label class="text-sm text-gray-400 block mb-2">Tenant</label>
+              @if (selectedTenant()) {
+                <div class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white flex justify-between items-center">
+                  <span>{{ selectedTenant()?.tradingName }}</span>
+                  <button (click)="selectedTenantId.set(null); tenantSearch.set('')" class="text-xs text-[#e20074] hover:text-pink-400 font-semibold">Change</button>
+                </div>
+              } @else {
+                <div class="relative">
+                  <input type="text" placeholder="Search for a tenant..."
+                    class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#e20074]"
+                    [ngModel]="tenantSearch()"
+                    (ngModelChange)="tenantSearch.set($event)"
+                    (focus)="showTenantResults.set(true)"
+                    (blur)="onTenantBlur()">
+                  @if (showTenantResults() && filteredTenants().length > 0) {
+                    <div class="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                      @for (tenant of filteredTenants(); track tenant.id) {
+                        <div (mousedown)="selectTenant(tenant)" class="px-3 py-2 hover:bg-[#e20074]/20 cursor-pointer">
+                          {{ tenant.tradingName }}
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Role Selection -->
+            <div>
+              <label class="text-sm text-gray-400 block mb-2">Role</label>
+               @if (selectedRole()) {
+                <div class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white flex justify-between items-center">
+                  <span>{{ selectedRole()?.name }}</span>
+                  <button (click)="selectedRoleId.set(null); roleSearch.set('')" class="text-xs text-[#e20074] hover:text-pink-400 font-semibold">Change</button>
+                </div>
+              } @else {
+                <div class="relative">
+                  <input type="text" placeholder="Search for a role..."
+                    class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#e20074]"
+                    [ngModel]="roleSearch()"
+                    (ngModelChange)="roleSearch.set($event)"
+                    (focus)="showRoleResults.set(true)"
+                    (blur)="onRoleBlur()">
+                  @if (showRoleResults() && filteredRoles().length > 0) {
+                    <div class="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                      @for (role of filteredRoles(); track role.id) {
+                        <div (mousedown)="selectRole(role)" class="px-3 py-2 hover:bg-[#e20074]/20 cursor-pointer">
+                          {{ role.name }}
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
           </div>
-          <button (click)="handleCreateUser()" [disabled]="isLoading()" class="w-full mt-6 flex justify-center items-center bg-[#e20074] hover:bg-pink-600 disabled:bg-pink-800 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
+          <button (click)="handleCreateUser()" [disabled]="isLoading() || !selectedTenantId() || !selectedRoleId()" class="w-full mt-6 flex justify-center items-center bg-[#e20074] hover:bg-pink-600 disabled:bg-pink-800 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
             @if (isLoading()) { <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Creating User...</span> }
             @else { <span>Create User &amp; Continue</span> }
           </button>
