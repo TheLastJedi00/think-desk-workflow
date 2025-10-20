@@ -135,14 +135,44 @@
            <div class="space-y-6">
               <div>
                 <h3 class="text-lg font-semibold text-white mb-3 border-b border-gray-700 pb-2">SLA Details</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div><label for="slaName" class="text-sm text-gray-400 block mb-2">Policy Name</label><input id="slaName" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="slaName()" (ngModelChange)="slaName.set($event)"></div>
-                  <div><label for="slaPrioName" class="text-sm text-gray-400 block mb-2">Priority Name</label><input id="slaPrioName" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="slaPriorityName()" (ngModelChange)="slaPriorityName.set($event)"></div>
-                  <div><label for="slaRespTime" class="text-sm text-gray-400 block mb-2">Response Time (mins)</label><input id="slaRespTime" type="number" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="slaResponseTime()" (ngModelChange)="slaResponseTime.set($event)"></div>
-                  <div><label for="slaResTime" class="text-sm text-gray-400 block mb-2">Resolution Time (mins)</label><input id="slaResTime" type="number" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="slaResolutionTime()" (ngModelChange)="slaResolutionTime.set($event)"></div>
-                   <div class="flex items-center space-x-4 pt-2">
-                    <div class="flex items-center"><input id="slaActive" type="checkbox" class="h-4 w-4 rounded bg-gray-700 text-[#e20074] focus:ring-[#e20074]" [ngModel]="slaIsActive()" (ngModelChange)="slaIsActive.set($event)"><label for="slaActive" class="ml-2 text-sm text-gray-300">Active</label></div>
-                    <div class="flex items-center"><input id="slaOpHours" type="checkbox" class="h-4 w-4 rounded bg-gray-700 text-[#e20074] focus:ring-[#e20074]" [ngModel]="slaOperationalHoursOnly()" (ngModelChange)="slaOperationalHoursOnly.set($event)"><label for="slaOpHours" class="ml-2 text-sm text-gray-300">Operational Hours Only</label></div>
+                <div class="space-y-4">
+                  <!-- Tenant Selection -->
+                  <div>
+                    <label class="text-sm text-gray-400 block mb-2">Tenant</label>
+                    @if (slaSelectedTenant()) {
+                      <div class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white flex justify-between items-center">
+                        <span>{{ slaSelectedTenant()?.tradingName }}</span>
+                        <button (click)="slaSelectedTenantId.set(null); slaTenantSearch.set('')" class="text-xs text-[#e20074] hover:text-pink-400 font-semibold">Change</button>
+                      </div>
+                    } @else {
+                      <div class="relative">
+                        <input type="text" placeholder="Search for a tenant..."
+                          class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#e20074]"
+                          [ngModel]="slaTenantSearch()"
+                          (ngModelChange)="slaTenantSearch.set($event)"
+                          (focus)="showSlaTenantResults.set(true)"
+                          (blur)="onSlaTenantBlur()">
+                        @if (showSlaTenantResults() && slaFilteredTenants().length > 0) {
+                          <div class="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                            @for (tenant of slaFilteredTenants(); track tenant.id) {
+                              <div (mousedown)="selectSlaTenant(tenant)" class="px-3 py-2 hover:bg-[#e20074]/20 cursor-pointer">
+                                {{ tenant.tradingName }}
+                              </div>
+                            }
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><label for="slaName" class="text-sm text-gray-400 block mb-2">Policy Name</label><input id="slaName" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="slaName()" (ngModelChange)="slaName.set($event)"></div>
+                    <div><label for="slaPrioName" class="text-sm text-gray-400 block mb-2">Priority Name</label><input id="slaPrioName" type="text" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="slaPriorityName()" (ngModelChange)="slaPriorityName.set($event)"></div>
+                    <div><label for="slaRespTime" class="text-sm text-gray-400 block mb-2">Response Time (mins)</label><input id="slaRespTime" type="number" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="slaResponseTime()" (ngModelChange)="slaResponseTime.set($event)"></div>
+                    <div><label for="slaResTime" class="text-sm text-gray-400 block mb-2">Resolution Time (mins)</label><input id="slaResTime" type="number" class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white" [ngModel]="slaResolutionTime()" (ngModelChange)="slaResolutionTime.set($event)"></div>
+                    <div class="flex items-center space-x-4 pt-2 md:col-span-2">
+                      <div class="flex items-center"><input id="slaActive" type="checkbox" class="h-4 w-4 rounded bg-gray-700 text-[#e20074] focus:ring-[#e20074]" [ngModel]="slaIsActive()" (ngModelChange)="slaIsActive.set($event)"><label for="slaActive" class="ml-2 text-sm text-gray-300">Active</label></div>
+                      <div class="flex items-center"><input id="slaOpHours" type="checkbox" class="h-4 w-4 rounded bg-gray-700 text-[#e20074] focus:ring-[#e20074]" [ngModel]="slaOperationalHoursOnly()" (ngModelChange)="slaOperationalHoursOnly.set($event)"><label for="slaOpHours" class="ml-2 text-sm text-gray-300">Operational Hours Only</label></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -154,7 +184,7 @@
                 </div>
               </div>
            </div>
-          <button (click)="handleCreateSla()" [disabled]="isLoading()" class="w-full mt-6 flex justify-center items-center bg-[#e20074] hover:bg-pink-600 disabled:bg-pink-800 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
+          <button (click)="handleCreateSla()" [disabled]="isLoading() || !slaSelectedTenantId()" class="w-full mt-6 flex justify-center items-center bg-[#e20074] hover:bg-pink-600 disabled:bg-pink-800 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
             @if (isLoading()) { <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Creating SLA...</span> }
             @else { <span>Create SLA &amp; Continue</span> }
           </button>

@@ -75,8 +75,19 @@ export class WorkflowComponent {
   showTenantResults = signal(false);
   showRoleResults = signal(false);
 
+  // SLA step tenant selection signals
+  slaTenantSearch = signal('');
+  slaSelectedTenantId = signal<number|null>(null);
+  showSlaTenantResults = signal(false);
+
   filteredTenants = computed(() => {
     const search = this.tenantSearch().toLowerCase();
+    if (!search) return this.tenants();
+    return this.tenants().filter(t => t.tradingName.toLowerCase().includes(search));
+  });
+
+  slaFilteredTenants = computed(() => {
+    const search = this.slaTenantSearch().toLowerCase();
     if (!search) return this.tenants();
     return this.tenants().filter(t => t.tradingName.toLowerCase().includes(search));
   });
@@ -88,6 +99,7 @@ export class WorkflowComponent {
   });
 
   selectedTenant = computed(() => this.tenants().find(t => t.id === this.selectedTenantId()));
+  slaSelectedTenant = computed(() => this.tenants().find(t => t.id === this.slaSelectedTenantId()));
   selectedRole = computed(() => this.roles().find(r => r.id === this.selectedRoleId()));
 
 
@@ -220,7 +232,17 @@ export class WorkflowComponent {
       this.createdIds.update(ids => ({ ...ids, roleId: response.id }));
       await this.fetchTenantsAndRoles();
     } catch (e) {
-      console.error('Create Role failed', e);
+      if (
+        e instanceof HttpErrorResponse &&
+        e.error?.message?.includes("Duplicate entry") &&
+        e.error?.message?.includes("for key 'role.UK8sewwnpamngi6b1dwaa88askk'")
+      ) {
+        this.error.set(null);
+        this.lastResponse.set({ status: e.status, body: e.error });
+        await this.fetchTenantsAndRoles(); // Proceed since role exists
+      } else {
+        console.error('Create Role failed', e);
+      }
     }
   }
 
@@ -260,6 +282,7 @@ export class WorkflowComponent {
       });
       const response = await this.executePostRequest<{ id: number }>('/users', body, true);
       this.createdIds.update(ids => ({ ...ids, userId: response.id }));
+      this.slaSelectedTenantId.set(this.selectedTenantId()); // Pre-select for SLA step
       this.currentStep.set('sla');
     } catch (e) {
       console.error('Create User failed', e);
@@ -267,6 +290,10 @@ export class WorkflowComponent {
   }
 
   async handleCreateSla() {
+    if (!this.slaSelectedTenantId()) {
+        this.error.set("Please select a tenant.");
+        return;
+    }
     try {
       const body = JSON.stringify({
         name: this.slaName(),
@@ -278,7 +305,7 @@ export class WorkflowComponent {
           name: this.slaCategoryName(),
           description: this.slaCategoryDesc()
         },
-        tenantId: this.createdIds().tenantId,
+        tenantId: this.slaSelectedTenantId(),
         priorityDto: {
           name: this.slaPriorityName()
         }
@@ -328,6 +355,8 @@ export class WorkflowComponent {
     this.roleSearch.set('');
     this.selectedTenantId.set(null);
     this.selectedRoleId.set(null);
+    this.slaTenantSearch.set('');
+    this.slaSelectedTenantId.set(null);
   }
 
   selectTenant(tenant: Tenant) {
@@ -348,6 +377,16 @@ export class WorkflowComponent {
 
   onRoleBlur() {
     setTimeout(() => this.showRoleResults.set(false), 150);
+  }
+
+  selectSlaTenant(tenant: Tenant) {
+    this.slaSelectedTenantId.set(tenant.id);
+    this.slaTenantSearch.set('');
+    this.showSlaTenantResults.set(false);
+  }
+
+  onSlaTenantBlur() {
+    setTimeout(() => this.showSlaTenantResults.set(false), 150);
   }
 
   formatResponseBody(body: any): string {
