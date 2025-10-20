@@ -56,9 +56,7 @@ export class WorkflowComponent {
   loginPassword = signal('password123');
   
   tenantTradingName = signal('Empresa Exemplo SA');
-  tenantLegalName = signal('Empresa Exemplo LTDA');
   tenantTaxID = signal('12.345.678/0001-99');
-  tenantSettings = signal('{"theme":"dark"}');
   
   roleName = signal('ROLE_TECHNICIAN');
 
@@ -192,9 +190,7 @@ export class WorkflowComponent {
     try {
       const body = JSON.stringify({
         tradingName: this.tenantTradingName(),
-        legalName: this.tenantLegalName(),
         taxID: this.tenantTaxID(),
-        settings: this.tenantSettings()
       });
       const response = await this.executePostRequest<{ id: number }>('/tenants', body, true);
       this.createdIds.update(ids => ({ ...ids, tenantId: response.id }));

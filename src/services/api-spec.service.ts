@@ -49,7 +49,7 @@ export class ApiSpecService {
       {
         name: 'Tenants',
         endpoints: [
-            { method: 'POST', path: '/tenants', description: 'Cria um novo tenant (empresa).', needsAuth: true, pathParams: [], requestBodyExample: JSON.stringify({"tradingName":"Empresa Exemplo SA","legalName":"Empresa Exemplo LTDA","taxID":"12.345.678/0001-99","settings":"{\"theme\":\"dark\"}"}, null, 2) },
+            { method: 'POST', path: '/tenants', description: 'Cria um novo tenant (empresa).', needsAuth: true, pathParams: [], requestBodyExample: JSON.stringify({"tradingName":"Empresa Exemplo SA","taxID":"12.345.678/0001-99"}, null, 2) },
             { method: 'GET', path: '/tenants', description: 'Lista todos os tenants.', needsAuth: true, pathParams: [] },
             { method: 'GET', path: '/tenants/{id}', description: 'Busca um tenant específico por ID.', needsAuth: true, pathParams: [{name: 'id', description: 'ID do tenant'}] },
             { method: 'PUT', path: '/tenants/{id}', description: 'Atualiza um tenant existente.', needsAuth: true, pathParams: [{name: 'id', description: 'ID do tenant'}], requestBodyExample: JSON.stringify({"tradingName":"Empresa Atualizada SA","legalName":"Empresa Atualizada LTDA","taxID":"12.345.678/0001-99","settings":"{\"theme\":\"light\"}"}, null, 2) },
