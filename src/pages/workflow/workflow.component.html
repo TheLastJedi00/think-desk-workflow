@@ -268,6 +268,35 @@
                 }
               </div>
 
+              <!-- Technician -->
+              <div>
+                <label class="text-sm text-gray-400 block mb-2">Technician</label>
+                @if (selectedTicketTechnician()) {
+                  <div class="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-white flex justify-between items-center">
+                    <span>{{ selectedTicketTechnician()?.name }}</span>
+                    <button (click)="ticketTechnicianId.set(null); ticketTechnicianSearch.set('')" class="text-xs text-[#e20074] hover:text-pink-400 font-semibold">Change</button>
+                  </div>
+                } @else {
+                  <div class="relative">
+                    <input type="text" placeholder="Search for a technician..."
+                      class="w-full bg-gray-800 border border-gray-600 rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#e20074]"
+                      [ngModel]="ticketTechnicianSearch()"
+                      (ngModelChange)="ticketTechnicianSearch.set($event)"
+                      (focus)="showTicketTechnicianResults.set(true)"
+                      (blur)="onTicketTechnicianBlur()">
+                    @if (showTicketTechnicianResults() && filteredTicketTechnicians().length > 0) {
+                      <div class="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-600 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                        @for (technician of filteredTicketTechnicians(); track technician.id) {
+                          <div (mousedown)="selectTicketTechnician(technician)" class="px-3 py-2 hover:bg-[#e20074]/20 cursor-pointer">
+                            {{ technician.name }}
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+
               <!-- Category -->
               <div>
                 <label class="text-sm text-gray-400 block mb-2">Category</label>
@@ -327,7 +356,7 @@
               </div>
             </div>
           </div>
-          <button (click)="handleCreateTicket()" [disabled]="isLoading() || !ticketTenantId() || !ticketRequesterId() || !ticketCategoryId() || !ticketPriorityId()" class="w-full mt-6 flex justify-center items-center bg-[#e20074] hover:bg-pink-600 disabled:bg-pink-800 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
+          <button (click)="handleCreateTicket()" [disabled]="isLoading() || !ticketTenantId() || !ticketRequesterId() || !ticketTechnicianId() || !ticketCategoryId() || !ticketPriorityId()" class="w-full mt-6 flex justify-center items-center bg-[#e20074] hover:bg-pink-600 disabled:bg-pink-800 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
             @if (isLoading()) { <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Creating Ticket...</span> }
             @else { <span>Finish Workflow</span> }
           </button>

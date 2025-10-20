@@ -26,6 +26,11 @@ interface User {
   name: string;
 }
 
+interface Technician {
+  id: number;
+  name: string;
+}
+
 interface Category {
   id: number;
   name: string;
@@ -142,24 +147,28 @@ export class WorkflowComponent {
 
   // API data state for ticket step
   users = signal<User[]>([]);
+  technicians = signal<Technician[]>([]);
   categories = signal<Category[]>([]);
   priorities = signal<Priority[]>([]);
 
   // Ticket foreign key signals
   ticketTenantId = signal<number | null>(null);
   ticketRequesterId = signal<number | null>(null);
+  ticketTechnicianId = signal<number | null>(null);
   ticketCategoryId = signal<number | null>(null);
   ticketPriorityId = signal<number | null>(null);
   
   // Ticket autocomplete search text
   ticketTenantSearch = signal('');
   ticketRequesterSearch = signal('');
+  ticketTechnicianSearch = signal('');
   ticketCategorySearch = signal('');
   ticketPrioritySearch = signal('');
 
   // Ticket autocomplete visibility
   showTicketTenantResults = signal(false);
   showTicketRequesterResults = signal(false);
+  showTicketTechnicianResults = signal(false);
   showTicketCategoryResults = signal(false);
   showTicketPriorityResults = signal(false);
   
@@ -176,6 +185,12 @@ export class WorkflowComponent {
     return this.users().filter(u => u.name.toLowerCase().includes(search));
   });
 
+  filteredTicketTechnicians = computed(() => {
+    const search = this.ticketTechnicianSearch().toLowerCase();
+    if (!search) return this.technicians();
+    return this.technicians().filter(t => t.name.toLowerCase().includes(search));
+  });
+
   filteredTicketCategories = computed(() => {
     const search = this.ticketCategorySearch().toLowerCase();
     if (!search) return this.categories();
@@ -190,6 +205,7 @@ export class WorkflowComponent {
 
   selectedTicketTenant = computed(() => this.tenants().find(t => t.id === this.ticketTenantId()));
   selectedTicketRequester = computed(() => this.users().find(u => u.id === this.ticketRequesterId()));
+  selectedTicketTechnician = computed(() => this.technicians().find(t => t.id === this.ticketTechnicianId()));
   selectedTicketCategory = computed(() => this.categories().find(c => c.id === this.ticketCategoryId()));
   selectedTicketPriority = computed(() => this.priorities().find(p => p.id === this.ticketPriorityId()));
 
@@ -410,6 +426,9 @@ export class WorkflowComponent {
       const users = await this.executeGetRequest<User[]>('/users');
       this.users.set(users);
 
+      const technicians = await this.executeGetRequest<Technician[]>('/technicians');
+      this.technicians.set(technicians);
+
       const slaPoliciesResponse = await this.executeGetRequest<SlaPolicy[] | { content: SlaPolicy[] }>('/slapolicies');
       const slaPolicies = Array.isArray(slaPoliciesResponse) ? slaPoliciesResponse : slaPoliciesResponse?.content;
 
@@ -454,6 +473,7 @@ export class WorkflowComponent {
         resolutionDueDate: new Date(this.ticketDueDate()).toISOString(),
         ticketType: this.ticketType(),
         category: this.ticketCategoryId(),
+        technician: this.ticketTechnicianId(),
         tenant: this.ticketTenantId(),
         requester: this.ticketRequesterId(),
         priority: this.ticketPriorityId()
@@ -482,16 +502,19 @@ export class WorkflowComponent {
     this.slaSelectedTenantId.set(null);
 
     this.users.set([]);
+    this.technicians.set([]);
     this.categories.set([]);
     this.priorities.set([]);
     
     this.ticketTenantId.set(null);
     this.ticketRequesterId.set(null);
+    this.ticketTechnicianId.set(null);
     this.ticketCategoryId.set(null);
     this.ticketPriorityId.set(null);
     
     this.ticketTenantSearch.set('');
     this.ticketRequesterSearch.set('');
+    this.ticketTechnicianSearch.set('');
     this.ticketCategorySearch.set('');
     this.ticketPrioritySearch.set('');
   }
@@ -543,6 +566,15 @@ export class WorkflowComponent {
   }
   onTicketRequesterBlur() {
     setTimeout(() => this.showTicketRequesterResults.set(false), 150);
+  }
+
+  selectTicketTechnician(technician: Technician) {
+    this.ticketTechnicianId.set(technician.id);
+    this.ticketTechnicianSearch.set('');
+    this.showTicketTechnicianResults.set(false);
+  }
+  onTicketTechnicianBlur() {
+    setTimeout(() => this.showTicketTechnicianResults.set(false), 150);
   }
 
   selectTicketCategory(category: Category) {
