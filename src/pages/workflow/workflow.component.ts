@@ -114,7 +114,7 @@ export class WorkflowComponent {
 
   ticketTitle = signal('Impressora não funciona');
   ticketDescription = signal('A impressora do 2º andar parou de funcionar.');
-  ticketType = signal<'INCIDENT' | 'REQUEST' | 'PROBLEM'>('INCIDENT');
+  ticketType = signal<'INCIDENT' | 'SERVICEREQUEST' | 'PROBLEM'>('SERVICEREQUEST');
   ticketDueDate = signal(new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().substring(0, 16));
 
 
@@ -331,6 +331,7 @@ export class WorkflowComponent {
         resolutionDueDate: new Date(this.ticketDueDate()).toISOString(),
         ticketType: this.ticketType(),
         category: this.createdIds().categoryId,
+        technician: 1, // Technician is not created in the workflow, so we use a default ID.
         tenant: this.createdIds().tenantId,
         requester: this.createdIds().userId,
         priority: this.createdIds().priorityId
