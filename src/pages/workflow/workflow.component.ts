@@ -247,7 +247,7 @@ export class WorkflowComponent {
         password: this.userPassword(),
         position: this.userPosition(),
         tenantId: this.selectedTenantId(),
-        roles: [{ id: this.selectedRoleId() }]
+        roleId: this.selectedRoleId()
       });
       const response = await this.executePostRequest<{ id: number }>('/users', body, true);
       this.createdIds.update(ids => ({ ...ids, userId: response.id }));
