@@ -52,11 +52,11 @@ export class WorkflowComponent {
   });
 
   // Form data signals
-  loginEmail = signal('tecnico@example.com');
-  loginPassword = signal('password123');
+  loginEmail = signal('admin');
+  loginPassword = signal('admin');
   
-  tenantTradingName = signal('Empresa Exemplo SA');
-  tenantTaxID = signal('12.345.678/0001-99');
+  tenantTradingName = signal('Volkswagen');
+  tenantTaxID = signal('59104422000150');
   
   roleName = signal('ROLE_TECHNICIAN');
 
